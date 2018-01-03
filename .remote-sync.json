@@ -1,0 +1,19 @@
+{
+  "logger": {
+    "title": "Remote Sync"
+  },
+  "uploadOnSave": true,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "cca.in2p3.fr",
+  "port": "22",
+  "target": "/afs/in2p3.fr/home/r/rvirot/Codes/EddyCurrents/",
+  "ignore": [
+    ".remote-sync.json",
+    ".git/**"
+  ],
+  "username": "rvirot",
+  "password": "CCkimor007",
+  "watch": [],
+  "transport": "scp"
+}
