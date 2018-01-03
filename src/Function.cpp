@@ -8,6 +8,11 @@
 
 using namespace std;
 
+
+
+
+
+/*
 double F(double xi, double r, double z, double t) {
     double f, divider;
     double q, z_p;
@@ -47,3 +52,4 @@ double F(double xi, double r, double z, double t, double a_i, double b_i, double
     return f;
 
 }
+*/
