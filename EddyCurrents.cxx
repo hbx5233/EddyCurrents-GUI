@@ -57,17 +57,15 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	//===========================================================================
 	//=				 Variables initialization and constant definition			=
 	//===========================================================================
-	wi = new double[order];
-	xi = new double[order];
-	wi_size = -1;
+	wi = new double[order_def];
+	xi = new double[order_def];
 
-	varList.push_back(a);
-	varList.push_back(b);
-	varList.push_back(d);
-	varList.push_back(omega*2*TMath::Pi());
-	varList.push_back(j);
-	varList.push_back(I);
-	varList.push_back(order);
+	varList.push_back(a_def);
+	varList.push_back(b_def);
+	varList.push_back(d_def);
+	varList.push_back(omega_def*2*TMath::Pi());
+	varList.push_back(I0_def);
+	varList.push_back(order_def);
 
 	var_range = 50;
 	var_rangeMin = 1;
@@ -98,7 +96,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	aNumberEntry = new TGNumberEntry(horzFrameTopParam, 1,1);
 	horzFrameTopParam->AddFrame(aNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 	aNumberEntry->Resize(75,20);
-	aNumberEntry->SetNumber(a*1000);
+	aNumberEntry->SetNumber(a_def*1000);
 
 	TGLabel *bParamLabel = new TGLabel(horzFrameTopParam, "b (mm) : ");
 	horzFrameTopParam->AddFrame(bParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
@@ -106,7 +104,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	bNumberEntry = new TGNumberEntry(horzFrameTopParam, 1,1);
 	horzFrameTopParam->AddFrame(bNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 	bNumberEntry->Resize(75,20);
-	bNumberEntry->SetNumber(b*1000);
+	bNumberEntry->SetNumber(b_def*1000);
 
 	TGLabel *dParamLabel = new TGLabel(horzFrameTopParam, "d (mm) : ");
 	horzFrameTopParam->AddFrame(dParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
@@ -114,7 +112,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	dNumberEntry = new TGNumberEntry(horzFrameTopParam, 1,1);
 	horzFrameTopParam->AddFrame(dNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 	dNumberEntry->Resize(75,20);
-	dNumberEntry->SetNumber(d*1000);
+	dNumberEntry->SetNumber(d_def*1000);
 
 	TGLabel *omegaParamLabel = new TGLabel(horzFrameTopParam, "f (Hz) : ");
 	horzFrameTopParam->AddFrame(omegaParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
@@ -122,26 +120,18 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	omegaNumberEntry = new TGNumberEntry(horzFrameTopParam, 1,1);
 	horzFrameTopParam->AddFrame(omegaNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 	omegaNumberEntry->Resize(75,20);
-	omegaNumberEntry->SetNumber(omega);
+	omegaNumberEntry->SetNumber(omega_def);
 
 	TGHorizontalFrame *horzFrameTopParam2= new TGHorizontalFrame(this);
 	AddFrame(horzFrameTopParam2, new TGLayoutHints(kLHintsExpandX | kLHintsTop, 2, 2, 2, 2));
 
-	TGLabel *jParamLabel = new TGLabel(horzFrameTopParam2, "j : ");
-	horzFrameTopParam2->AddFrame(jParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
+	TGLabel *I0ParamLabel = new TGLabel(horzFrameTopParam2, "I0 : ");
+	horzFrameTopParam2->AddFrame(I0ParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
 
-	jNumberEntry = new TGNumberEntry(horzFrameTopParam2, 1,1);
-	horzFrameTopParam2->AddFrame(jNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
-	jNumberEntry->Resize(75,20);
-	jNumberEntry->SetNumber(j);
-
-	TGLabel *IParamLabel = new TGLabel(horzFrameTopParam2, "I : ");
-	horzFrameTopParam2->AddFrame(IParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
-
-	INumberEntry = new TGNumberEntry(horzFrameTopParam2, 1,1);
-	horzFrameTopParam2->AddFrame(INumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
-	INumberEntry->Resize(75,20);
-	INumberEntry->SetNumber(I);
+	I0NumberEntry = new TGNumberEntry(horzFrameTopParam2, 1,1);
+	horzFrameTopParam2->AddFrame(I0NumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
+	I0NumberEntry->Resize(75,20);
+	I0NumberEntry->SetNumber(I0_def);
 
 	TGLabel *orderParamLabel = new TGLabel(horzFrameTopParam2, "order : ");
 	horzFrameTopParam2->AddFrame(orderParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
@@ -149,7 +139,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	orderNumberEntry = new TGNumberEntry(horzFrameTopParam2, 1,1);
 	horzFrameTopParam2->AddFrame(orderNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 	orderNumberEntry->Resize(75,20);
-	orderNumberEntry->SetNumber(order);
+	orderNumberEntry->SetNumber(order_def);
 
 	TGHorizontalFrame *horzFrameTop= new TGHorizontalFrame(this);
 	AddFrame(horzFrameTop, new TGLayoutHints(kLHintsExpandX | kLHintsTop, 2, 2, 2, 2));

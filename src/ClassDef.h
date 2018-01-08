@@ -21,7 +21,7 @@ class MyMainFrame : public TGMainFrame {
 		TGTextButton					*extractCanvasButton, *Plot2DDistribButton;
 		TGTextButton					*PlotIntVsVarButton, *PlotSkinDepthButton;
 		TGNumberEntry					*aNumberEntry, *bNumberEntry, *dNumberEntry, *omegaNumberEntry;
-		TGNumberEntry					*jNumberEntry, *INumberEntry, *orderNumberEntry;
+		TGNumberEntry					*I0NumberEntry, *orderNumberEntry;
 		TGNumberEntry					*var_rangeMinEntry, *var_rangeMaxEntry, *var_rangeEntry;
 		TGComboBox						*VarCombo;
 		TRootEmbeddedCanvas				*embeddedCanvas;
@@ -36,7 +36,6 @@ class MyMainFrame : public TGMainFrame {
 		TTree 							*tree;
 		char 							StatusBarText[40], output[400];
 
-		int 							wi_size;
 		double          				*wi, *xi;
 		double 							var_range, var_rangeMax, var_rangeMin;
 		vector<double> 					varList;
@@ -66,7 +65,7 @@ class MyMainFrame : public TGMainFrame {
 			varList[1]  = bNumberEntry->GetNumber()/1000;						//b
 			varList[2]  = dNumberEntry->GetNumber()/1000;						//d
 			varList[3]  = omegaNumberEntry->GetNumber()*2*TMath::Pi();			//omega
-			varList[5]  = INumberEntry->GetNumber();							//I
+			varList[5]  = I0NumberEntry->GetNumber();							//I
 			varList[6]  = orderNumberEntry->GetNumber();						//order
 		}
 
@@ -82,24 +81,26 @@ class MyMainFrame : public TGMainFrame {
 		//===========================================================================
 		//=				 ComputeGaussLaguerreQuadrature function					=
 		//===========================================================================
-		void ComputeGaussLaguerreQuadrature(int GLorder) {
-			// Get the Gauss-Laguerre roots and weights
-			delete xi;
-			delete wi;
+		void ComputeGaussLaguerreQuadrature(int GL_order) {
+			// Get the Gauss-Laguerre roots and weights, if needed
 
-			wi = new double[GLorder];                                // weights
-			xi = new double[GLorder];  								// roots
+			if(GL_order != sizeof(xi)/sizeof(xi[0])) {
+				delete xi;
+				delete wi;
 
-			wi_size = GLorder;
+				wi = new double[GL_order];                                // weights
+				xi = new double[GL_order];  								// roots
 
-			cgqf (GLorder, 5, 0.0, 0.0, 0.0, 1, xi, wi);                     //5, Generalized Laguerre, (a,inf)     (x-a)^alpha*exp(-b*(x-a)). See GaussLaguerre.cpp.
+				// TODO: include b as an input, maybe compare result with var changing ?
+				cgqf (GL_order, 5, 0.0, 0.0, 0.0, 1, xi, wi);                     //5, Generalized Laguerre, (a,inf)     (x-a)^alpha*exp(-b*(x-a)). See GaussLaguerre.cpp.
+			}
 		}
 
 		//===========================================================================
 		//=							 PlotSkinDepth function							=
 		//===========================================================================
 		void PlotSkinDepth() {
-			double t = 0.5;
+		/*	double t = 0.5;
 			//Get Js = Current at the surface
 
 			this->ParametersUpdate();
@@ -113,7 +114,7 @@ class MyMainFrame : public TGMainFrame {
 			double			r_max = 4.0*varList[0];
 			double 			p2_i = varList[3]*mu*sigma*varList[0]*varList[0];
 
-			if (wi_size != (int) varList[6]) this->ComputeGaussLaguerreQuadrature((int) varList[6]);
+			this->ComputeGaussLaguerreQuadrature((int) varList[6]);
 
 			integral = 0.0;
 			r = 4.0*varList[0]/((double) 2*r_range);
@@ -163,13 +164,14 @@ class MyMainFrame : public TGMainFrame {
 			std::cout << "integral = " << integral << '\n';
 			std::cout << "stopped at depth = " << (z-varList[1])*1000 << '\n';
 			std::cout << "counter = " << counter << '\n';
+			*/
 		}
 
 		//===========================================================================
 		//=					 Plot2DDistribOfJPhi function							=
 		//===========================================================================
-		void Plot2DDistribOfJPhi() {
-			// Definitions
+	void Plot2DDistribOfJPhi() {
+		/*		// Definitions
 			double          r, z, t;
 			double          J_phi = 0.0;
 
@@ -180,7 +182,7 @@ class MyMainFrame : public TGMainFrame {
 			// in a parallel position to the dividing surface alpha*alpha_prime
 
 			// Re-compute GaussLaguerre quadrature rule if necessary :
-			if (wi_size != varList[6]) this->ComputeGaussLaguerreQuadrature((int) varList[6]);
+			this->ComputeGaussLaguerreQuadrature((int) varList[6]);
 
 			delete TH2Buffer;
 			TH2Buffer = new TH2F("TH2Plot","TH2Plot", 	r_range, 0.0, 8.0*varList[0],
@@ -218,12 +220,15 @@ class MyMainFrame : public TGMainFrame {
 			canvas->SetGridy(1);
 			TH2Buffer->Draw("colz");
 			canvas->Update();
+
+			*/
 		}
 
 		//===========================================================================
 		//=						 J_Phi integral function							=
 		//===========================================================================
 		double JPhiIntegral(vector<double> var, double t_i) {
+/*
 			// Definitions
 			double          r, z, integral;
 			double          J_phi = 0.0;
@@ -233,7 +238,7 @@ class MyMainFrame : public TGMainFrame {
 			double			r_max = 4.0*var[0];
 			double 			p2_i = var[3]*mu*sigma*var[0]*var[0];
 
-			if (wi_size != (int) var[6]) this->ComputeGaussLaguerreQuadrature((int) var[6]);
+			this->ComputeGaussLaguerreQuadrature((int) var[6]);
 
 			z = z_min+var[2]/((double) z_range)/2;
 			integral = 0.0;
@@ -258,12 +263,14 @@ class MyMainFrame : public TGMainFrame {
 			}
 
 			return integral;
+			*/
 		}
 
 		//===========================================================================
 		//=								 PlotIntVSVar								=
 		//===========================================================================
 		void PlotIntVsVar() {
+			/*
 			int var_i = VarCombo->GetSelected()-1;
 			int ScaleFactor = 1;
 
@@ -299,6 +306,7 @@ class MyMainFrame : public TGMainFrame {
 			canvas->SetGridy(1);
 			TGraphBuffer->Draw("ACP");
 			canvas->Update();
+			*/
 		}
 
 		//===========================================================================

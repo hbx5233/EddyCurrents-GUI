@@ -9,11 +9,12 @@ extern const double sigma;
 extern const int r_range;
 extern const int z_range;
 
-extern double a;
-extern double b;
-extern double d;
-extern double omega;
-extern double I;
-extern int order;
+extern double a_def;
+extern double b_def;
+extern double d_def;
+extern double omega_def;
+extern double I0_def;
+extern double t_def;
+extern int order_def;
 
 #endif
