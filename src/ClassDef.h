@@ -21,7 +21,7 @@ class MyMainFrame : public TGMainFrame {
 		TGTextButton					*extractCanvasButton, *Plot2DDistribButton;
 		TGTextButton					*PlotIntVsVarButton, *PlotSkinDepthButton;
 		TGNumberEntry					*aNumberEntry, *bNumberEntry, *dNumberEntry, *omegaNumberEntry;
-		TGNumberEntry					*I0NumberEntry, *orderNumberEntry;
+		TGNumberEntry					*I0NumberEntry, *tNumberEntry, *orderNumberEntry;
 		TGNumberEntry					*var_rangeMinEntry, *var_rangeMaxEntry, *var_rangeEntry;
 		TGComboBox						*VarCombo;
 		TRootEmbeddedCanvas				*embeddedCanvas;
@@ -38,7 +38,7 @@ class MyMainFrame : public TGMainFrame {
 
 		double          				*wi, *xi;
 		double 							var_range, var_rangeMax, var_rangeMin;
-		vector<double> 					varList;
+		vector<double> 					prm_list;
 
 		//===========================================================================
 		//=																			=
@@ -61,12 +61,28 @@ class MyMainFrame : public TGMainFrame {
 		//=						 ParametersUpdate function							=
 		//===========================================================================
 		void ParametersUpdate() {
-			varList[0] = aNumberEntry->GetNumber()/1000;						//a
-			varList[1]  = bNumberEntry->GetNumber()/1000;						//b
-			varList[2]  = dNumberEntry->GetNumber()/1000;						//d
-			varList[3]  = omegaNumberEntry->GetNumber()*2*TMath::Pi();			//omega
-			varList[5]  = I0NumberEntry->GetNumber();							//I
-			varList[6]  = orderNumberEntry->GetNumber();						//order
+
+			if (prm_list[1] != bNumberEntry->GetNumber()/1000 || prm_list[6] != orderNumberEntry->GetNumber()) {	// Update b and recalculate the GL parameters if b is updated
+				this->ComputeGaussLaguerreQuadrature(orderNumberEntry->GetNumber());
+			}
+
+			prm_list[0] = aNumberEntry->GetNumber()/1000;						//a
+			prm_list[1] = bNumberEntry->GetNumber()/1000;						//b
+			prm_list[2] = dNumberEntry->GetNumber()/1000;						//d
+			prm_list[3] = omegaNumberEntry->GetNumber()*2*TMath::Pi();			//omega
+			prm_list[4] = I0NumberEntry->GetNumber();							//I0
+			prm_list[5] = tNumberEntry->GetNumber();							//t
+			prm_list[6] = orderNumberEntry->GetNumber();						//order
+		}
+
+		//===========================================================================
+		//=					 ParametersOverload function							=
+		//===========================================================================
+		void ParametersOverload(int param_ID, double new_value) {
+			prm_list[param_ID] = new_value;
+
+			// Recalculate GL if required
+			if( param_ID == 6 || param_ID == 1 ) this->ComputeGaussLaguerreQuadrature((int) prm_list[6]);
 		}
 
 		//===========================================================================
@@ -83,17 +99,13 @@ class MyMainFrame : public TGMainFrame {
 		//===========================================================================
 		void ComputeGaussLaguerreQuadrature(int GL_order) {
 			// Get the Gauss-Laguerre roots and weights, if needed
+			delete xi;
+			delete wi;
 
-			if(GL_order != sizeof(xi)/sizeof(xi[0])) {
-				delete xi;
-				delete wi;
+			wi = new double[GL_order];                                // weights
+			xi = new double[GL_order];  								// roots
 
-				wi = new double[GL_order];                                // weights
-				xi = new double[GL_order];  								// roots
-
-				// TODO: include b as an input, maybe compare result with var changing ?
-				cgqf (GL_order, 5, 0.0, 0.0, 0.0, 1, xi, wi);                     //5, Generalized Laguerre, (a,inf)     (x-a)^alpha*exp(-b*(x-a)). See GaussLaguerre.cpp.
-			}
+			cgqf (GL_order, 5, 0.0, 0.0, 0.0, prm_list[1], xi, wi);                     //5, Generalized Laguerre, (a,inf)     (x-a)^alpha*exp(-b*(x-a)). See GaussLaguerre.cpp.
 		}
 
 		//===========================================================================
@@ -108,110 +120,108 @@ class MyMainFrame : public TGMainFrame {
 			// Definitions
 			double          r, z, integral;
 			double          J_phi = 0.0;
-			double			z_min = varList[1];
+			double			z_min = prm_list[1];
 
 			// BEWARE OF THE VARIABLE INTEGRATION RANGE IN R!!!!!!!!!!!!!!!!!!!!
-			double			r_max = 4.0*varList[0];
-			double 			p2_i = varList[3]*mu*sigma*varList[0]*varList[0];
+			double			r_max = 4.0*prm_list[0];
+			double 			p2_i = prm_list[3]*mu*sigma*prm_list[0]*prm_list[0];
 
-			this->ComputeGaussLaguerreQuadrature((int) varList[6]);
+			this->ComputeGaussLaguerreQuadrature((int) prm_list[6]);
 
 			integral = 0.0;
-			r = 4.0*varList[0]/((double) 2*r_range);
+			r = 4.0*prm_list[0]/((double) 2*r_range);
 
 			for (size_t r_index = 0; r_index < r_range; r_index++) {
 				J_phi = 0.0;
 
-				for (size_t i = 0; i < ((int) varList[6]); i++) {                                        // Sum (i = 1 to n) wi * f(xi)
-					J_phi += wi[i]*F(xi[i], r, z_min, t, varList[0], varList[1], varList[2], varList[4], varList[3]);
+				for (size_t i = 0; i < ((int) prm_list[6]); i++) {                                        // Sum (i = 1 to n) wi * f(xi)
+					J_phi += wi[i]*F(xi[i], r, z_min, t, prm_list[0], prm_list[1], prm_list[2], prm_list[4], prm_list[3]);
 				}
 
-				J_phi *= -varList[4]*p2_i*varList[5]*TMath::Exp(varList[4]*varList[3]*t)/(varList[0]*varList[0]);                              // Times the front factor
+				J_phi *= -prm_list[4]*p2_i*prm_list[4]*TMath::Exp(prm_list[4]*prm_list[3]*t)/(prm_list[0]*prm_list[0]);                              // Times the front factor
 
 				integral += J_phi;
 
-				r += 4.0*varList[0]/((double) r_range);
+				r += 4.0*prm_list[0]/((double) r_range);
 			}
 
 			double Js = integral;
 
 			std::cout << "Js = " << Js<< '\n';
 			z = z_min;
-			z += varList[2]/((double) z_range);
+			z += prm_list[2]/((double) z_range);
 			int counter = 0;
 			//Find z for which int J_phi = 0.37*Js => it's the skin depth
 			for (size_t z_index = 0; z_index < z_range; z_index++) {
 				integral = 0.0;
-				r = 4.0*varList[0]/((double) 2*r_range);
+				r = 4.0*prm_list[0]/((double) 2*r_range);
 				counter++;
 				for (size_t r_index = 0; r_index < r_range; r_index++) {
 					J_phi = 0.0;
 
-					for (size_t i = 0; i < ((int) varList[6]); i++) {                                        // Sum (i = 1 to n) wi * f(xi)
-						J_phi += wi[i]*F(xi[i], r, z, t, varList[0], varList[1], varList[2], varList[4], varList[3]);
+					for (size_t i = 0; i < ((int) prm_list[6]); i++) {                                        // Sum (i = 1 to n) wi * f(xi)
+						J_phi += wi[i]*F(xi[i], r, z, t, prm_list[0], prm_list[1], prm_list[2], prm_list[4], prm_list[3]);
 					}
 
-					J_phi *= -varList[4]*p2_i*varList[5]*TMath::Exp(varList[4]*varList[3]*t)/(varList[0]*varList[0]);                              // Times the front factor
+					J_phi *= -prm_list[4]*p2_i*prm_list[5]*TMath::Exp(prm_list[4]*prm_list[3]*t)/(prm_list[0]*prm_list[0]);                              // Times the front factor
 
 					integral += J_phi;
 
-					r += 4.0*varList[0]/((double) r_range);
+					r += 4.0*prm_list[0]/((double) r_range);
 				}
 				///if(integral <= 0.37*Js) break;
-				std::cout << "0.37*Js = " << Js*0.37 << "\t int " << integral << "\t z " << (z-varList[1])*1000 <<'\n';
-				z += varList[2]/((double) z_range);
+				std::cout << "0.37*Js = " << Js*0.37 << "\t int " << integral << "\t z " << (z-prm_list[1])*1000 <<'\n';
+				z += prm_list[2]/((double) z_range);
 			}
 			std::cout << "integral = " << integral << '\n';
-			std::cout << "stopped at depth = " << (z-varList[1])*1000 << '\n';
+			std::cout << "stopped at depth = " << (z-prm_list[1])*1000 << '\n';
 			std::cout << "counter = " << counter << '\n';
 			*/
 		}
 
 		//===========================================================================
-		//=					 Plot2DDistribOfJPhi function							=
+		//=					 Plot2DDistribOfA2 function							=
 		//===========================================================================
-	void Plot2DDistribOfJPhi() {
-		/*		// Definitions
-			double          r, z, t;
-			double          J_phi = 0.0;
+	void Plot2DDistribOfA2() {
+				// Definitions
+			double          x, y, A2;
 
 			this->ParametersUpdate();
 
 			// Setup of the problem :
-			// Induced current inside a plate having as an excitation a circular current loop above the plate
+			// Induced current inside a plate having as an excitation a wire above the plate
 			// in a parallel position to the dividing surface alpha*alpha_prime
 
 			// Re-compute GaussLaguerre quadrature rule if necessary :
-			this->ComputeGaussLaguerreQuadrature((int) varList[6]);
+			this->ComputeGaussLaguerreQuadrature((int) prm_list[6]);
 
 			delete TH2Buffer;
-			TH2Buffer = new TH2F("TH2Plot","TH2Plot", 	r_range, 0.0, 8.0*varList[0],
-														z_range, varList[1], (varList[1]+varList[2]));
+			// TEMP check def of TH2
+			TH2Buffer = new TH2F("TH2Plot","TH2Plot", 	x_range, 0.0, 8.0*prm_list[0],
+														y_range, prm_list[1], (prm_list[1]+prm_list[2]));
 
-			t = 0.5;
-			z = varList[1]+varList[2]/((double) z_range)/2;
-			const double p2 = varList[3]*mu*sigma*varList[0]*varList[0];
+			// TODO Clean the procedure to scan the z range
+			y = prm_list[1]+prm_list[2]/((double) y_range)/2;
 
-			this->ProgressBarInit(z_range);
+			// TODO change or load the var list into the prm[] table to call the A2 Function
 
-			for (size_t z_index = 0; z_index < z_range; z_index++) {
-				r = 0.0+8.0*varList[0]/((double) r_range)/2;
+			this->ProgressBarInit(y_range);
 
-				for (size_t r_index = 0; r_index < r_range; r_index++) {
-					J_phi = 0.0;
+			for (size_t y_index = 0; y_index < y_range; y_index++) {
+				x = 0.0+8.0*prm_list[0]/((double) x_range)/2;
 
-					for (size_t i = 0; i < varList[6]; i++) {                    // Sum (i = 1 to n) wi * f(xi)
-						J_phi += wi[i]*F(xi[i], r, z, t);
-					}
+				for (size_t x_index = 0; x_index < x_range; x_index++) {
+					// TEMP test real part and then norm for A2
+					// TODO define the PRM ARRAY INPUT
+					A2 = A2Z(x, y, prm_list, xi, wi).at(0); // Real part
 
-					J_phi *= -varList[4]*p2*varList[5]*TMath::Exp(varList[4]*varList[3]*t)/(varList[0]*varList[0]);          // Times the front factor
+					TH2Buffer->Fill(x, y, A2);
 
-					TH2Buffer->Fill(r, z, J_phi);
-
-					r += 8.0*varList[0]/((double) r_range);
+					// TODO Clean the procedure to scan the r range
+					x += 8.0*prm_list[0]/((double) x_range);
 				}
-				z += varList[2]/((double) z_range);
-				this->ProgressBarUpdate(z_index);
+				y += prm_list[2]/((double) y_range);
+				this->ProgressBarUpdate(y_index);
 			}
 
 			canvas->cd();
@@ -220,8 +230,6 @@ class MyMainFrame : public TGMainFrame {
 			canvas->SetGridy(1);
 			TH2Buffer->Draw("colz");
 			canvas->Update();
-
-			*/
 		}
 
 		//===========================================================================
@@ -290,10 +298,10 @@ class MyMainFrame : public TGMainFrame {
 			this->ProgressBarInit(var_range);
 
 			for (size_t index = 0; index < var_range+1; index++) {
-				varList[var_i] = var_value*ScaleFactor;
+				prm_list[var_i] = var_value*ScaleFactor;
 
 				x[index] = var_value;
-				y[index] = JPhiIntegral(varList, t);
+				y[index] = JPhiIntegral(prm_list, t);
 
 				var_value += ((double) (var_rangeMax-var_rangeMin))/var_range;
 				this->ProgressBarUpdate(index);

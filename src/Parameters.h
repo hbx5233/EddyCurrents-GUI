@@ -6,8 +6,8 @@ extern const double mu_r;
 extern const double mu;
 extern const double sigma;
 
-extern const int r_range;
-extern const int z_range;
+extern const int x_range;
+extern const int y_range;
 
 extern double a_def;
 extern double b_def;

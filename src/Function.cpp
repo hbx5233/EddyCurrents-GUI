@@ -49,7 +49,7 @@ double I2(double d_opt, double rho_q, double phi_q, double m) {
     return I2_output;
 }
 
-std::vector< double > A2Z(double x, double y, double prm[], double* xi, double* wi) {
+std::vector< double > A2Z(double x, double y, std::vector< double > prm, double* xi, double* wi) {
     std::vector< double > output;
     double rho_A, phi_A, rho_B, phi_B, rho_q, phi_q;
     double NR, NI, DR, DI;
@@ -57,7 +57,7 @@ std::vector< double > A2Z(double x, double y, double prm[], double* xi, double* 
     double INTR = 0.0;
     double INTI = 0.0;
     double RA2, IA2;
-    double wt = prm[3] * prm[5];
+    double wt = prm.at(3) * prm.at(5);
 
     // Parameters array (prm[]) is the list of all the parameters used to compute the Eddy EddyCurrents, resp.
     // index            parameter
@@ -67,17 +67,12 @@ std::vector< double > A2Z(double x, double y, double prm[], double* xi, double* 
     // 3                omega
     // 4                I0
     // 5                t
+    // 6                order
 
-    double p = Sqrt( prm[3] * mu * sigma );
-
-    // TODO check import of xi and wi tables and their size calculation
-    int GL_order = sizeof(xi)/sizeof(xi[0]);
-
-    // TEMP TBR
-    std::cout << "array size : " << GL_order << '\n';
+    double p = Sqrt( prm.at(3) * mu * sigma );
 
     // Sum over all the elements wi*f(xi)
-    for (size_t act_order = 0; act_order < GL_order; act_order++) {
+    for (size_t act_order = 0; act_order < prm.at(6); act_order++) {
         // Calculate rho_A, rho_B, phi_A, phi_B, rho_q and phi_q
         rho_A = Sqrt( Power(xi[act_order], 2) + Sqrt(2)*xi[act_order]*p +  Power(p, 2) );
         rho_B = Sqrt( Power(xi[act_order], 2) - Sqrt(2)*xi[act_order]*p +  Power(p, 2) );
@@ -90,11 +85,11 @@ std::vector< double > A2Z(double x, double y, double prm[], double* xi, double* 
         // args =  double d_opt, double rho_q, double phi_q, double m
         // d_opt is either 'd'  (prm[2]) or 'd+y' (prm[2] + y)
 
-        NR = R1(prm[2] + y, rho_q, phi_q, xi[act_order]) + R2(prm[2] + y, rho_q, phi_q, xi[act_order]);
-        NI = I1(prm[2] + y, rho_q, phi_q, xi[act_order]) + I2(prm[2] + y, rho_q, phi_q, xi[act_order]);
+        NR = R1(prm.at(2) + y, rho_q, phi_q, xi[act_order]) + R2(prm.at(2) + y, rho_q, phi_q, xi[act_order]);
+        NI = I1(prm.at(2) + y, rho_q, phi_q, xi[act_order]) + I2(prm.at(2) + y, rho_q, phi_q, xi[act_order]);
 
-        DR = R1(prm[2], rho_q, phi_q, xi[act_order]) - R2(prm[2], rho_q, phi_q, xi[act_order]);
-        DI = I1(prm[2], rho_q, phi_q, xi[act_order]) - I2(prm[2], rho_q, phi_q, xi[act_order]);
+        DR = R1(prm.at(2), rho_q, phi_q, xi[act_order]) - R2(prm.at(2), rho_q, phi_q, xi[act_order]);
+        DI = I1(prm.at(2), rho_q, phi_q, xi[act_order]) - I2(prm.at(2), rho_q, phi_q, xi[act_order]);
 
         GBR = ( NR * DR + NI * DI ) / ( Power(DR, 2) + Power(DI, 2) );
         GBI = ( NI * DR - NR * DI ) / ( Power(DR, 2) + Power(DI, 2) );
@@ -104,10 +99,10 @@ std::vector< double > A2Z(double x, double y, double prm[], double* xi, double* 
     }
 
     RA2 = Cos( wt ) * INTR - Sin( wt ) * INTI;
-    RA2 *= mu * prm[4] / Pi();
+    RA2 *= mu * prm.at(4) / Pi();
 
     IA2 = Cos( wt ) * INTI + Sin( wt ) * INTR;
-    IA2 *= mu * prm[4] / Pi();
+    IA2 *= mu * prm.at(4) / Pi();
 
     output.push_back(RA2);
     output.push_back(IA2);

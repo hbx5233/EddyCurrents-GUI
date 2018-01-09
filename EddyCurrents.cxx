@@ -60,12 +60,13 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	wi = new double[order_def];
 	xi = new double[order_def];
 
-	varList.push_back(a_def);
-	varList.push_back(b_def);
-	varList.push_back(d_def);
-	varList.push_back(omega_def*2*TMath::Pi());
-	varList.push_back(I0_def);
-	varList.push_back(order_def);
+	prm_list.push_back(a_def);
+	prm_list.push_back(b_def);
+	prm_list.push_back(d_def);
+	prm_list.push_back(omega_def*2*TMath::Pi());
+	prm_list.push_back(I0_def);
+	prm_list.push_back(t_def);
+	prm_list.push_back(order_def);
 
 	var_range = 50;
 	var_rangeMin = 1;
@@ -133,6 +134,14 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	I0NumberEntry->Resize(75,20);
 	I0NumberEntry->SetNumber(I0_def);
 
+	TGLabel *tParamLabel = new TGLabel(horzFrameTopParam2, "t : ");
+	horzFrameTopParam2->AddFrame(tParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
+
+	tNumberEntry = new TGNumberEntry(horzFrameTopParam2, 1,1);
+	horzFrameTopParam2->AddFrame(tNumberEntry, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
+	tNumberEntry->Resize(75,20);
+	tNumberEntry->SetNumber(t_def);
+
 	TGLabel *orderParamLabel = new TGLabel(horzFrameTopParam2, "order : ");
 	horzFrameTopParam2->AddFrame(orderParamLabel, new TGLayoutHints(kLHintsLeft | kLHintsCenterY, 2, 0, 0, 0));
 
@@ -145,7 +154,7 @@ MyMainFrame::MyMainFrame(const TGWindow *p, UInt_t w, UInt_t h) : TGMainFrame(p,
 	AddFrame(horzFrameTop, new TGLayoutHints(kLHintsExpandX | kLHintsTop, 2, 2, 2, 2));
 
 	Plot2DDistribButton = new TGTextButton(horzFrameTop, " Plot 2D distrib ");
-	Plot2DDistribButton->Connect("Pressed()", "MyMainFrame", this, "Plot2DDistribOfJPhi()");
+	Plot2DDistribButton->Connect("Pressed()", "MyMainFrame", this, "Plot2DDistribOfA2()");
 	horzFrameTop->AddFrame(Plot2DDistribButton, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 2, 0, 0, 0));
 
 	PlotSkinDepthButton = new TGTextButton(horzFrameTop, " Skin Depth for Al ");

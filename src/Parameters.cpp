@@ -7,8 +7,8 @@ const double mu_r = 1.000022;                                                   
 const double mu = mu_0*mu_r;
 const double sigma = 3.5*TMath::Power(10,7);                                    //electrical conductivity in S/m
 
-const int r_range = 250;                                                        //number of "bins" on the r direction (plot and integral calc)
-const int z_range = 250;                                                        //number of "bins" on the z direction (plot and integral calc)
+const int x_range = 250;                                                        //number of "bins" on the r direction (plot and integral calc)
+const int y_range = 250;                                                        //number of "bins" on the z direction (plot and integral calc)
 
 // Default values of non-const parameters (that can be changed using the GUI)
 double a_def = 25.0/1000;                                                           //radius of the coil in m

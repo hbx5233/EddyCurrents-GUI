@@ -2,7 +2,7 @@
 #define FUNCTION_H
 #include <vector>
 
-std::vector< double > A2Z(double x, double y, double parameters[], double* xi, double* wi);
+std::vector< double > A2Z(double x, double y, std::vector< double > prm, double* xi, double* wi);
 
 double R1(double rho_q, double phi_q, double d_opt, double m);
 double R2(double rho_q, double phi_q, double d_opt, double m);
